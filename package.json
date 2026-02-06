@@ -1,0 +1,111 @@
+{
+  "name": "linepeek",
+  "displayName": "LinePeek",
+  "description": "Display number of lines of a file next to its name in the Explorer.",
+  "version": "0.0.1",
+  "publisher": "brunobrise",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "LinePeek",
+      "properties": {
+        "linepeek.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable line count decorations."
+        },
+        "linepeek.ignoredFileExtensions": {
+          "type": "array",
+          "default": [
+            "png",
+            "jpg",
+            "jpeg",
+            "gif",
+            "bmp",
+            "ico",
+            "tiff",
+            "webp",
+            "svg",
+            "mp4",
+            "mov",
+            "avi",
+            "mkv",
+            "mp3",
+            "wav",
+            "flac",
+            "zip",
+            "tar",
+            "gz",
+            "7z",
+            "rar",
+            "exe",
+            "dll",
+            "so",
+            "dylib",
+            "bin",
+            "iso",
+            "pdf",
+            "doc",
+            "docx",
+            "xls",
+            "xlsx",
+            "ppt",
+            "pptx",
+            "odt",
+            "ods",
+            "odp"
+          ],
+          "description": "List of file extensions to ignore (no line count will be shown)."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "node esbuild.js",
+    "watch": "node esbuild.js --watch",
+    "package": "node esbuild.js --production",
+    "lint": "eslint src --ext ts",
+    "format": "prettier --write .",
+    "test": "node ./out/test/runTest.js",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.90.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "@vscode/test-cli": "^0.0.4",
+    "@vscode/test-electron": "^2.3.9",
+    "esbuild": "^0.20.0",
+    "eslint": "^8.56.0",
+    "glob": "^10.3.10",
+    "husky": "^9.0.0",
+    "lint-staged": "^15.2.0",
+    "mocha": "^10.3.0",
+    "ovsx": "^0.8.3",
+    "prettier": "^3.2.5",
+    "typescript": "^5.3.3",
+    "vsce": "^2.15.0"
+  },
+  "lint-staged": {
+    "*.{ts,js,json,md,yml}": [
+      "prettier --write"
+    ],
+    "*.ts": [
+      "eslint --fix"
+    ]
+  }
+}
