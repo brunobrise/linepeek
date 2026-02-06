@@ -15,6 +15,16 @@
   ],
   "main": "./dist/extension.js",
   "contributes": {
+    "commands": [
+      {
+        "command": "linepeek.showWorkspaceStats",
+        "title": "LinePeek: Show Workspace Statistics"
+      },
+      {
+        "command": "linepeek.toggleDisplayMode",
+        "title": "LinePeek: Toggle Display Mode (Lines/Size/Both)"
+      }
+    ],
     "configuration": {
       "type": "object",
       "title": "LinePeek",
@@ -22,10 +32,13 @@
         "linepeek.enable": {
           "type": "boolean",
           "default": true,
-          "description": "Enable/disable line count decorations."
+          "description": "Enable/disable line count decorations globally."
         },
         "linepeek.ignoredFileExtensions": {
           "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "png",
             "jpg",
@@ -66,6 +79,133 @@
             "odp"
           ],
           "description": "List of file extensions to ignore (no line count will be shown)."
+        },
+        "linepeek.ignoredPatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "**/node_modules/**",
+            "**/.git/**",
+            "**/dist/**",
+            "**/build/**",
+            "**/*.min.js",
+            "**/*.map"
+          ],
+          "description": "Glob patterns for files/directories to ignore. Supports ** wildcards."
+        },
+        "linepeek.fileSizeLimitMB": {
+          "type": "number",
+          "default": 10,
+          "minimum": 1,
+          "maximum": 1000,
+          "description": "Maximum file size in MB to analyze. Files larger than this will be skipped."
+        },
+        "linepeek.displayMode": {
+          "type": "string",
+          "enum": [
+            "lines",
+            "size",
+            "both"
+          ],
+          "enumDescriptions": [
+            "Show line count only",
+            "Show file size only",
+            "Show both line count and file size"
+          ],
+          "default": "lines",
+          "description": "What information to display in the Explorer badge."
+        },
+        "linepeek.useCompactNumbers": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use compact notation for large numbers (e.g., 1.2k instead of 1234)."
+        },
+        "linepeek.colorThresholds": {
+          "type": "object",
+          "description": "Line count thresholds for color coding. Files are colored based on their line count.",
+          "properties": {
+            "small": {
+              "type": "number",
+              "default": 100,
+              "description": "Files with fewer lines than this will be shown in the default color."
+            },
+            "medium": {
+              "type": "number",
+              "default": 500,
+              "description": "Files with lines between 'small' and this will be shown in info color (blue)."
+            },
+            "large": {
+              "type": "number",
+              "default": 1000,
+              "description": "Files with more lines than this will be shown in warning (yellow) or error (red) color."
+            }
+          },
+          "default": {
+            "small": 100,
+            "medium": 500,
+            "large": 1000
+          }
+        },
+        "linepeek.showSloc": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show SLOC (Source Lines of Code) count in tooltip, excluding comments and blank lines."
+        },
+        "linepeek.showDirectoryTotals": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show cumulative line counts on directories. May impact performance in large workspaces."
+        },
+        "linepeek.enableLiveUpdates": {
+          "type": "boolean",
+          "default": true,
+          "description": "Update line counts in real-time as you edit files (debounced)."
+        },
+        "linepeek.liveUpdateDelayMs": {
+          "type": "number",
+          "default": 1000,
+          "minimum": 100,
+          "maximum": 10000,
+          "description": "Delay in milliseconds before updating line counts after typing stops."
+        },
+        "linepeek.showGitChanges": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show lines added/removed since last commit in tooltip (requires Git extension)."
+        },
+        "linepeek.showPerformanceStats": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show cache performance statistics in the status bar."
+        },
+        "linepeek.languageSettings": {
+          "type": "object",
+          "description": "Language-specific settings. Keys are file extensions, values are settings objects.",
+          "default": {},
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "colorThresholds": {
+                "type": "object",
+                "properties": {
+                  "small": {
+                    "type": "number"
+                  },
+                  "medium": {
+                    "type": "number"
+                  },
+                  "large": {
+                    "type": "number"
+                  }
+                }
+              },
+              "showSloc": {
+                "type": "boolean"
+              }
+            }
+          }
         }
       }
     }
