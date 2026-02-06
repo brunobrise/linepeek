@@ -1,11 +1,18 @@
-# Change Log
+# Changelog
 
-All notable changes to the "LinePeek" extension will be documented in this file.
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## 0.1.0 (2026-02-06)
 
-## [Unreleased]
+### Features
+
+- **config:** add new settings for display mode, color thresholds, patterns, and commands ([e3d08a6](https://github.com/brunobrise/linepeek/commit/e3d08a63eb02e5849aa17f1fb9dae5bcd30c8c48))
+- **extension:** add live updates, color coding, git integration, directory totals, and workspace stats ([91cef6c](https://github.com/brunobrise/linepeek/commit/91cef6c3834a066b815afc32405ff36caac54134))
+- initial project setup with configuration and core extension logic ([ef09465](https://github.com/brunobrise/linepeek/commit/ef0946509f74ea6c468b387c8e1b9515650bba96))
+
+### Bug Fixes
+
+- handle string chunks in line count stream ([5772da5](https://github.com/brunobrise/linepeek/commit/5772da547fa21706231eb932145f3df8e6258e0f))
 
 ## [0.0.1] - 2026-02-06
 
