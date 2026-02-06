@@ -1,0 +1,74 @@
+name: PR Check
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  validate-pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR title
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            chore
+            ci
+            build
+            revert
+          scopes: |
+            core
+            config
+            deps
+            docs
+            ci
+            release
+          requireScope: false
+          subjectMinLength: 5
+          subjectMaxLength: 72
+
+  check-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if CHANGELOG needs update
+        id: check
+        run: |
+          # Check if any source files changed (excluding tests, docs, CI)
+          CHANGED_FILES=$(git diff --name-only origin/main...HEAD | grep -E '^(src/|package\.json)' || true)
+
+          if [ -n "$CHANGED_FILES" ]; then
+            echo "Source files changed, checking CHANGELOG..."
+            CHANGELOG_CHANGED=$(git diff --name-only origin/main...HEAD | grep -q 'CHANGELOG\.md' && echo "true" || echo "false")
+
+            if [ "$CHANGELOG_CHANGED" = "false" ]; then
+              echo "⚠️ Warning: Source files changed but CHANGELOG.md was not updated"
+              echo "Consider updating the changelog if this is a user-facing change"
+              # Don't fail, just warn
+            fi
+          fi
+
+      - name: Comment on PR
+        if: steps.check.outputs.warning == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '⚠️ **Reminder**: Source files were changed but CHANGELOG.md was not updated. Consider adding an entry if this is a user-facing change.'
+            })
