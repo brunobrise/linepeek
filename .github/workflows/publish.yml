@@ -8,6 +8,9 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      OVSX_PAT: ${{ secrets.OVSX_PAT }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,16 +31,12 @@ jobs:
         run: npm run package
 
       - name: Publish to VS Code Marketplace
-        if: success()
+        if: success() && env.VSCE_PAT != ''
         run: npm run publish:vsce
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
       - name: Publish to Open VSX Registry
-        if: success()
+        if: success() && env.OVSX_PAT != ''
         run: npm run publish:ovsx
-        env:
-          OVSX_PAT: ${{ secrets.OVSX_PAT }}
         continue-on-error: true
 
       - name: Create GitHub Release
