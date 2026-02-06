@@ -3,10 +3,17 @@ import { promisify } from 'util';
 
 const statAsync = promisify(fs.stat);
 
+export interface CommentPattern {
+  start: string;
+  end?: string;
+  type: 'single' | 'block';
+  pattern: string;
+}
+
 export interface LineCountOptions {
   excludeComments?: boolean;
   excludeBlankLines?: boolean;
-  commentPatterns?: string[];
+  commentPatterns?: CommentPattern[];
 }
 
 export interface FileStats {
