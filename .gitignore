@@ -3,3 +3,33 @@ dist
 out
 .vscode-test
 .DS_Store
+
+# VS Code extension artifacts
+*.vsix
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment variables
+.env
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+*.vsix
+*.log
+.env
+.env.local
+coverage
+.idea
+.vscode/settings.json
+*.swp
+*.swo
+*~
