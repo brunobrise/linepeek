@@ -125,7 +125,10 @@ class LineCountDecorationProvider implements vscode.FileDecorationProvider {
       let count = 0;
       const stream = fs.createReadStream(filePath);
 
-      stream.on('data', (chunk: Buffer) => {
+      stream.on('data', (chunk: Buffer | string) => {
+        if (typeof chunk === 'string') {
+          chunk = Buffer.from(chunk);
+        }
         for (let i = 0; i < chunk.length; i++) {
           if (chunk[i] === 10) {
             // 10 is '\n'
