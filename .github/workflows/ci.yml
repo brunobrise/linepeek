@@ -89,7 +89,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
+      - name: Compile tests
+        run: npm run test-compile
+
+      - name: Run tests (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a npm test
+        env:
+          TEST_SUITE: ${{ matrix.os }}
+
+      - name: Run tests (Windows/macOS)
+        if: runner.os != 'Linux'
         run: npm test
         env:
           TEST_SUITE: ${{ matrix.os }}
