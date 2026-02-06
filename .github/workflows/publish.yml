@@ -1,4 +1,4 @@
-name: Publish Extension
+name: Release and Publish
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - 'v*'
 
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -38,6 +38,7 @@ jobs:
         run: npm run publish:ovsx
         env:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        continue-on-error: true
 
       - name: Create GitHub Release
         if: success()
