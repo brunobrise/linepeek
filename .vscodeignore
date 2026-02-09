@@ -1,6 +1,7 @@
 .vscode
 .vscode-test
 .gitignore
+.git
 node_modules
 src/
 esbuild.js
@@ -8,4 +9,13 @@ tsconfig.json
 .husky/
 *.vsix
 CONTRIBUTING.md
+RELEASING.md
 .DS_Store
+.github/
+marketing/
+out/
+.versionrc.json
+.eslintrc.json
+.prettierrc
+package-lock.json
+
