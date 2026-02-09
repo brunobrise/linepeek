@@ -2,7 +2,7 @@
   "name": "linepeek",
   "displayName": "LinePeek",
   "description": "Display number of lines of a file next to its name in the Explorer.",
-  "version": "0.1.4-0",
+  "version": "0.1.4",
   "publisher": "brunobrise",
   "icon": "linepeek.png",
   "engines": {
