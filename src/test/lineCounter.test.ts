@@ -147,27 +147,31 @@ suite('LineCounter Tests', () => {
   });
 
   suite('formatCompactNumber', () => {
-    test('should return same number for values under 1000', () => {
+    test('should return same number for values under 100', () => {
       assert.strictEqual(formatCompactNumber(0), '0');
       assert.strictEqual(formatCompactNumber(1), '1');
-      assert.strictEqual(formatCompactNumber(999), '999');
+      assert.strictEqual(formatCompactNumber(99), '99');
     });
 
-    test('should format thousands with k suffix', () => {
+    test('should format hundreds with H suffix (rounded)', () => {
+      assert.strictEqual(formatCompactNumber(100), '1H');
+      assert.strictEqual(formatCompactNumber(149), '1H');
+      assert.strictEqual(formatCompactNumber(150), '2H');
+      assert.strictEqual(formatCompactNumber(949), '9H');
+      assert.strictEqual(formatCompactNumber(950), '1k');
+    });
+
+    test('should format thousands with k suffix (rounded)', () => {
       assert.strictEqual(formatCompactNumber(1000), '1k');
-      assert.strictEqual(formatCompactNumber(1500), '1.5k');
-      assert.strictEqual(formatCompactNumber(999999), '1000k');
+      assert.strictEqual(formatCompactNumber(1499), '1k');
+      assert.strictEqual(formatCompactNumber(1500), '2k');
+      assert.strictEqual(formatCompactNumber(9499), '9k');
     });
 
-    test('should format millions with M suffix', () => {
-      assert.strictEqual(formatCompactNumber(1000000), '1M');
-      assert.strictEqual(formatCompactNumber(1500000), '1.5M');
-      assert.strictEqual(formatCompactNumber(2500000), '2.5M');
-    });
-
-    test('should remove trailing .0', () => {
-      assert.strictEqual(formatCompactNumber(2000), '2k');
-      assert.strictEqual(formatCompactNumber(3000000), '3M');
+    test('should use k+ for 9500 and above', () => {
+      assert.strictEqual(formatCompactNumber(9500), 'k+');
+      assert.strictEqual(formatCompactNumber(10000), 'k+');
+      assert.strictEqual(formatCompactNumber(1000000), 'k+');
     });
   });
 

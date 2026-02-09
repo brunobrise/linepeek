@@ -123,7 +123,7 @@ class LineCountDecorationProvider implements vscode.FileDecorationProvider {
   private isEnabled = true;
   private fileSizeLimitBytes = 10 * 1024 * 1024;
   private displayMode: 'lines' | 'size' | 'both' = 'lines';
-  private useCompactNumbers = false;
+  private useCompactNumbers = true;
   private colorThresholds = { small: 100, medium: 500, large: 1000 };
   private languageSettings: Map<string, LanguageSettings> = new Map();
   private showSloc = false;
@@ -163,7 +163,7 @@ class LineCountDecorationProvider implements vscode.FileDecorationProvider {
     this.fileSizeLimitBytes = sizeLimitMB * 1024 * 1024;
 
     this.displayMode = config.get(DISPLAY_MODE_CONFIG, 'lines');
-    this.useCompactNumbers = config.get<boolean>(USE_COMPACT_NUMBERS_CONFIG, false);
+    this.useCompactNumbers = config.get<boolean>(USE_COMPACT_NUMBERS_CONFIG, true);
     this.colorThresholds = config.get(COLOR_THRESHOLDS_CONFIG, {
       small: 100,
       medium: 500,
@@ -333,18 +333,28 @@ class LineCountDecorationProvider implements vscode.FileDecorationProvider {
     // Build badge text
     let badge: string;
     if (isDirectory) {
-      badge = this.useCompactNumbers ? formatCompactNumber(count) : `${count}`;
-      badge = `∑${badge}`;
-    } else if (this.displayMode === 'lines') {
-      badge = this.useCompactNumbers ? formatCompactNumber(count) : `${count}`;
-    } else if (this.displayMode === 'size') {
-      badge = formatFileSize(fileSize);
+      // For directories, always compact to ensure it fits (Max 2 chars including ∑)
+      const compact = formatCompactNumber(count);
+      // If it's a single digit, show it, otherwise show a indicator like + or suffix
+      if (count < 10) {
+        badge = `∑${count}`;
+      } else if (compact.endsWith('H')) {
+        badge = `∑H`;
+      } else if (compact.endsWith('k') || compact.endsWith('+')) {
+        badge = `∑k`;
+      } else {
+        badge = `∑+`;
+      }
     } else {
-      // both
-      const linesStr = this.useCompactNumbers ? formatCompactNumber(count) : `${count}`;
-      badge = `${linesStr} · ${formatFileSize(fileSize)}`;
+      if (this.displayMode === 'size') {
+        badge = formatFileSize(fileSize).split(' ')[0].substring(0, 2);
+      } else {
+        // For files, use compact notation if enabled or if it exceeds 2 characters
+        const fullCount = count.toString();
+        badge =
+          this.useCompactNumbers || fullCount.length > 2 ? formatCompactNumber(count) : fullCount;
+      }
     }
-
     // Build tooltip
     let tooltip = isDirectory
       ? `${count.toLocaleString()} total lines in directory`
@@ -378,7 +388,7 @@ class LineCountDecorationProvider implements vscode.FileDecorationProvider {
       } else if (count >= thresholds.small) {
         color = new vscode.ThemeColor('editorInfo.foreground');
       } else {
-        color = new vscode.ThemeColor('descriptionForeground');
+        color = new vscode.ThemeColor('descriptionForeground'); // Default color for small files
       }
     } else {
       color = new vscode.ThemeColor('descriptionForeground');
@@ -662,14 +672,21 @@ async function scanDirectory(
 }
 
 function globToRegex(pattern: string): RegExp {
-  // Simple glob to regex conversion
+  // Escape regex special characters except for wildcards *, **, ?
+  // We want to handle them as wildcards, so we escape everything else and then process them.
   let regex = pattern
-    .replace(/\*\*/g, '{{GLOBSTAR}}')
-    .replace(/\*/g, '[^/]*')
-    .replace(/\?/g, '.')
-    .replace(/\{\{GLOBSTAR\}\}/g, '.*');
+    .replace(/[.+*?^${}()|[\]\\]/g, '\\$&') // Escape all regex chars including * and ?
+    .replace(/\\\*\\\*/g, '___GLOBSTAR___') // Handle **
+    .replace(/\\\*/g, '___STAR___') // Handle *
+    .replace(/\\\?/g, '___QM___'); // Handle ?
 
-  return new RegExp(regex, 'i');
+  // Handle globstars (**) - handle both escaped and unescaped slashes
+  regex = regex
+    .replace(/___GLOBSTAR___(\\\/|\/)?/g, '(.*$1)?')
+    .replace(/___STAR___/g, '[^/]*')
+    .replace(/___QM___/g, '.');
+
+  return new RegExp(`^${regex}$`, 'i');
 }
 
 function matchGlob(filePath: string, pattern: string): boolean {

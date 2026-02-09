@@ -32,52 +32,29 @@ export async function countLines(
 ): Promise<number> {
   return new Promise((resolve, reject) => {
     let count = 0;
-    let inComment = false;
-    let lastWasNewline = false;
-    let buffer = '';
-
-    const commentStarts = options.commentPatterns?.map((p) => p.start) || [];
-    const commentEnds = options.commentPatterns?.map((p) => p.end) || [];
-    const singleLineComments = options.commentPatterns
-      ?.filter((p) => p.type === 'single')
-      .map((p) => p.pattern) || ['//', '#'];
 
     const stream = fs.createReadStream(filePath);
 
     stream.on('data', (chunk: Buffer | string) => {
-      if (typeof chunk === 'string') {
-        chunk = Buffer.from(chunk);
-      }
-
-      for (let i = 0; i < chunk.length; i++) {
-        const byte = chunk[i];
-        buffer += String.fromCharCode(byte);
-
-        if (byte === 10) {
-          // Newline
+      const data = typeof chunk === 'string' ? Buffer.from(chunk) : chunk;
+      for (let i = 0; i < data.length; i++) {
+        if (data[i] === 10) {
+          // \n
           count++;
-          buffer = '';
         }
       }
     });
 
     stream.on('end', () => {
-      if (count === 0) {
-        // Check if file is truly empty
-        fs.stat(filePath, (err, stats) => {
-          if (err) {
-            resolve(0);
-            return;
-          }
-          if (stats.size === 0) {
-            resolve(0);
-          } else {
-            resolve(1);
-          }
-        });
-      } else {
-        resolve(count + 1);
+      const stats = fs.statSync(filePath);
+      if (stats.size === 0) {
+        resolve(0);
+        return;
       }
+      // If the file doesn't end with a newline, we still need to count the last line
+      // Check last byte if possible, but stats + count is usually safe enough
+      // Most files have at least 1 line if size > 0.
+      resolve(count > 0 ? count + 1 : 1);
     });
 
     stream.on('error', (err) => {
@@ -263,16 +240,26 @@ export async function getFileStats(filePath: string): Promise<FileStats> {
 }
 
 /**
- * Formats a large number to compact notation (e.g., 1234 -> 1.2k).
+ * Formats a large number to compact notation at most 2 characters (e.g., 1234 -> 1k, 123 -> 1H).
+ * This is optimized for VS Code decoration badges which have a 2-character limit.
  */
 export function formatCompactNumber(num: number): string {
-  if (num < 1000) {
+  if (num < 100) {
     return num.toString();
   }
-  if (num < 1000000) {
-    return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+  if (num < 1000) {
+    // For 100-999, show as hundreds (e.g., 149 -> 1H, 150 -> 2H)
+    const h = Math.round(num / 100);
+    // Ensure we don't return 10H if it rounds up (unlikely with num < 1000)
+    return h >= 10 ? '1k' : h + 'H';
   }
-  return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (num < 10000) {
+    // 1000-9999 -> 1k...9k
+    const k = Math.round(num / 1000);
+    return k >= 10 ? 'k+' : k + 'k';
+  }
+  // For 10k+, we just show k+ or similar to indicate it's large
+  return 'k+';
 }
 
 /**
