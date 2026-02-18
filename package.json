@@ -232,7 +232,8 @@
     "release:dry": "standard-version --dry-run",
     "postrelease": "git push --follow-tags origin main && npm run publish:vsce",
     "publish:vsce": "vsce publish",
-    "publish:ovsx": "ovsx publish"
+    "publish:ovsx": "ovsx publish",
+    "vsix": "vsce package"
   },
   "repository": {
     "type": "git",
